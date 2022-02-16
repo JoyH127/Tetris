@@ -41,6 +41,19 @@ body {
 .tree {
   background-color: rgb(31, 169, 31);
 }
+.bar {
+  background-color: rgb(240, 121, 240);
+}
+.square {
+  background-color: rgb(244, 227, 44);
+}
+.leftBlock {
+  background-color: rgb(42, 205, 255);
+}
+
+.rightBlock {
+  background-color: rgb(226, 43, 43);
+}
 .hidden {
   background-color: white;
 }
