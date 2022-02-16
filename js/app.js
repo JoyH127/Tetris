@@ -7,21 +7,23 @@ const gridColumn = 20;
 
 // set
 let score = 0;
-let duration = 50;
-let fallInterval;
+let duration = 500;
+// let fallInterval = setInterval((i) => {
+//   move("top", 1);
+// }, 800);
 let temItem;
 let pastItem;
 
 // getting next items
 const movingItem = {
-  type: "tree",
+  type: "leftBlock",
   direction: 0, // up arrow
   top: 0,
   left: 0, // 7 is the max
 };
 // blocks.tree[[direction[i,j],[i,j]]] => wrapper -> 20 lists -> 20 ul -> 10 li
-//
 
+// all block types
 const blocks = {
   tree: [
     [
@@ -47,6 +49,110 @@ const blocks = {
       [0, 1],
       [1, 0],
       [1, 1],
+    ],
+  ],
+  bar: [
+    [
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [2, 3],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [2, 3],
+    ],
+  ],
+  square: [
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ],
+  ],
+  leftBlock: [
+    [
+      [0, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+      [0, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [1, 2],
+    ],
+  ],
+  rightBlock: [
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [2, 2],
     ],
   ],
 };
@@ -76,12 +182,35 @@ function makeGrid() {
 }
 
 function move(way, num) {
-  pastItem = { ...temItem };
-  console.log(pastItem);
+  // pastItem = { ...temItem };
+  // console.log(pastItem);
   //getting moving information and add it up
   temItem[way] += num;
   console.log(temItem);
   showBlocks();
+}
+function changeDirection(direc, num) {
+  console.log(temItem[direc]);
+  console.log("print direction");
+  if (temItem[direc] < 3) {
+    temItem[direc] += num;
+  }
+  // it will iterate the range 0-3 direction num
+  else {
+    temItem[direc] = 0;
+  }
+  console.log(temItem);
+  showBlocks();
+}
+//create random blocks for whenever placed the block,also reset all.
+function randomblocks() {
+  const typeArr = ["tree", "bar", "square", "leftBlock", "rightBlock"];
+  //make a random index
+  const i = Math.floor(Math.random() * 5);
+  temItem.type = typeArr[i];
+  temItem.direction = 0;
+  temItem.left = 0;
+  temItem.top = 0;
 }
 
 document.addEventListener("keydown", (i) => {
@@ -91,6 +220,8 @@ document.addEventListener("keydown", (i) => {
     move("left", -1);
   } else if (i.keyCode == 40) {
     move("top", 1);
+  } else if (i.keyCode == 38) {
+    changeDirection("direction", 1);
   }
 });
 
@@ -134,6 +265,8 @@ function showBlocks() {
   // square index top -> y / left -> x
   const allx = [];
   const ally = [];
+  const stackItems = document.querySelectorAll(".stack");
+
   blocks[type][direction].forEach((block) => {
     let x = block[0] + left; // take array index for coloring in each row
     let y = block[1] + top; // each y
@@ -144,10 +277,12 @@ function showBlocks() {
       move("left", 1);
     } else if (y > 19) {
       move("top", -1);
+      randomblocks();
+    } else {
+      const fill = wrapper.childNodes[y].childNodes[0].childNodes[x];
+      fill.classList.add(type, "moved");
+      console.log(fill);
     }
-    const fill = wrapper.childNodes[y].childNodes[0].childNodes[x];
-    fill.classList.add(type, "moved");
-    console.log(fill);
 
     // wrapper -> 20 lists -> 20 ul -> 10 li
     // childNodes[list y num] -> ul will 0 index each 20 list ->
@@ -161,14 +296,14 @@ function showBlocks() {
     allx.push(x);
     ally.push(y);
   });
+
   console.log(allx);
   console.log(ally);
-  const checkRow = (row) => row > 9;
-  const checkColumn = (column) => column > 20;
-  if (allx.every(checkRow) && ally.every(checkColumn)) {
-    console.log("row");
-  }
   //   } else if (ally.every(checkColumn)) {
   //     console.log("what");
   //   }
 }
+
+// 1. save x,y set of array set
+// 2. check the array has the same set
+// erase fill with same x,y remove class (get fill element)
