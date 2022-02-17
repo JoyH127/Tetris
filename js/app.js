@@ -8,15 +8,14 @@ const gridColumn = 20;
 // set
 let score = 0;
 let duration = 500;
-// let fallInterval = setInterval((i) => {
-//   move("top", 1);
-// }, 800);
+let fallInterval = setInterval((i) => {
+  move("top", 1);
+}, 800);
 let temItem;
-let pastItem;
 
 // getting next items
 const movingItem = {
-  type: "leftBlock",
+  type: "bar",
   direction: 0, // up arrow
   top: 0,
   left: 0, // 7 is the max
@@ -186,8 +185,7 @@ function move(way, num) {
   // console.log(pastItem);
   //getting moving information and add it up
   temItem[way] += num;
-  console.log(temItem);
-  showBlocks();
+  showBlocks(way);
 }
 function changeDirection(direc, num) {
   console.log(temItem[direc]);
@@ -211,6 +209,8 @@ function randomblocks() {
   temItem.direction = 0;
   temItem.left = 0;
   temItem.top = 0;
+
+  showBlocks();
 }
 
 document.addEventListener("keydown", (i) => {
@@ -248,7 +248,7 @@ document.addEventListener("keydown", (i) => {
 //   });
 // }
 
-function showBlocks() {
+function showBlocks(way = "") {
   //destructuring. Not to use temItem.type .. temItem.direction..
   const { type, direction, top, left } = temItem;
 
@@ -257,52 +257,79 @@ function showBlocks() {
   moveditems.forEach((i) => {
     i.classList.remove(type, "moved");
   });
-  console.log(moveditems);
 
   // direction is nested array in type
   // block structure will be
   // type(object) -> dictionary (array) -> square x,y (array)
   // square index top -> y / left -> x
-  const allx = [];
-  const ally = [];
-  const stackItems = document.querySelectorAll(".stack");
 
-  blocks[type][direction].forEach((block) => {
-    let x = block[0] + left; // take array index for coloring in each row
-    let y = block[1] + top; // each y
-    console.log(x, y);
-    if (x > 9) {
-      move("left", -1);
-    } else if (x < 0) {
-      move("left", 1);
-    } else if (y > 19) {
-      move("top", -1);
-      randomblocks();
+  blocks[type][direction].some((item) => {
+    const x = item[0] + left; // take array index for coloring in each row
+    const y = item[1] + top; // each y
+
+    // check the items exists for unexpected x,y values ex) 0,1
+    const point = wrapper.childNodes[y]
+      ? wrapper.childNodes[y].childNodes[0].childNodes[x]
+      : null;
+    const possible = checkValue(point);
+    if (possible) {
+      point.classList.add(type, "moved");
     } else {
-      const fill = wrapper.childNodes[y].childNodes[0].childNodes[x];
-      fill.classList.add(type, "moved");
-      console.log(fill);
+      temItem = { ...movingItem };
+      setTimeout(() => {
+        showBlocks();
+        if (way === "top") {
+          stop();
+          randomblocks();
+        }
+      }, 0);
+      return true;
     }
-
-    // wrapper -> 20 lists -> 20 ul -> 10 li
-    // childNodes[list y num] -> ul will 0 index each 20 list ->
-    // console.log(y, x);
-
-    // if (typeof pastItem != "undefined") {
-    //   erase(x, y);
-    // }
-
-    //check
-    allx.push(x);
-    ally.push(y);
   });
+  movingItem.left = left;
+  movingItem.top = top;
+  movingItem.direction = direction;
 
-  console.log(allx);
-  console.log(ally);
-  //   } else if (ally.every(checkColumn)) {
-  //     console.log("what");
+  function stop() {
+    const moveditems = document.querySelectorAll(".moved");
+    moveditems.forEach((i) => {
+      i.classList.remove("moved");
+      i.classList.add("stack");
+    });
+  }
+
+  function checkValue(point) {
+    if (!point || point.classList.contains("stack")) {
+      return false;
+    }
+    return true;
+  }
+
+  //IMPORTANT: FOREACH NEVER STOP UNTIL FINISIH THE WHOLE ITERATION.
+  // some() and for loop ARE POSSIBLE TO STOP WHEN IT MEETS CERTIAN CONDITION.
+  // wrapper -> 20 lists -> 20 ul -> 10 li
+  // childNodes[list y num] -> ul will 0 index each 20 list ->
+  // blocks[type][direction].forEach((block) => {
+  //   let x = block[0] + left; // take array index for coloring in each row
+  //   let y = block[1] + top; // each y
+  //   console.log(x, y);
+  //   if (x > 9) {
+  //     move("left", -1);
+  //   } else if (x < 0) {
+  //     move("left", 1);
+  //   } else if (y > 19) {
+  //     move("top", -1);
+  //     randomblocks();
+  //   } else {
+  //     const fill = wrapper.childNodes[y].childNodes[0].childNodes[x];
+  //     fill.classList.add(type, "moved", "stack");
+  //     console.log(fill);
   //   }
+  // });
 }
+
+//check there is existing blocks.
+//
 
 // 1. save x,y set of array set
 // 2. check the array has the same set
